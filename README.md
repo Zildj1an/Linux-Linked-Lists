@@ -7,12 +7,19 @@ Usage: Compile, load the module, access via cat and echo to /proc/modlist
 
 
 $ make
+
 $ sudo insmod modlist.ko
+
 $ echo add 4 > /proc/modlist  or  $ echo add Madrid > /proc/modlist
+
 ...
+
 $ cat /proc/modlist
+
 $ echo remove 4 > /proc/modlist  or  $ echo remove Madrid > /proc/modlist
+
 $ echo cleanup > /proc/modlist
+
 ...
 
 
