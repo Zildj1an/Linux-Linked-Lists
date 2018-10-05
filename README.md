@@ -1,4 +1,4 @@
-# LinuxLinkedLists
+# Linux Linked Lists
 [EN] 
 Linux kernel module for managing a doubly-linked lists with ghost node -which uses few dynamic memory resources- of integers or chars. It includes an alternative implementation of read() using seq_files.
 Edit the Makefile for using chars.
