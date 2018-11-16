@@ -7,10 +7,13 @@
 #include <linux/seq_file.h> /* For reading the ADT */
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Carlos Bilbao");
-MODULE_DESCRIPTION("Linux kernel module for managing an efficient list (doubly-linked, with ghost node) of integers");
+MODULE_DESCRIPTION("Linux kernel module SMP-Safe for managing an efficient list (doubly-linked, with ghost node) of integers");
 
 #define MAX_SIZE 	 500
 #define MODULE_NAME 	"modlist"
+
+/* Reader-Writer Spin Lock (SMP-Safe) */
+DEFINE_RWLOCK(rwl);
 
 /* My /proc file entry */
 static struct proc_dir_entry *my_proc_entry;
@@ -80,7 +83,7 @@ void removeList(void) {
 }
 
 /* Auxiliar function - return number of elements*/
-int print_list(struct list_head* list, char members[]){
+int print_list(struct list_head* list, char members[], int maxSize){
 
 	struct list_item* item = NULL;
 	struct list_head* cur_node = NULL;
@@ -90,14 +93,15 @@ int print_list(struct list_head* list, char members[]){
 	list_for_each(cur_node, list) { /* while cur_node != list*/
 
 		item = list_entry(cur_node, struct list_item, links);
+		if(read < MAX_SIZE){
 #ifdef CHARS
 			aux = item->data;
-			while((members[read++] = *aux) != '\n') {++aux;}
+			while((members[read++] = *aux) != '\n' && read < MAX_SIZE) {++aux;}
 #else
-			sprintf(&members[read++], "%i\n", item->data);
-                        if(item->data > 9) sprintf(&members[read++], "%i\n", item->data % 10);
-                        if(item->data > 99) sprintf(&members[read++], "%i\n", item->data % 100);
+
+			read += sprintf(&members[read],"%i\n",item->data);
                         members[read++] = '\n';
+		}
 
 #endif
 	}
@@ -125,7 +129,9 @@ static ssize_t myproc_write(struct file *filp, const char __user *buf, size_t le
 		new_item->data = vmalloc(strlen(elem) + 1);
 		strcpy(new_item->data, elem);
 		new_item->data[strlen(new_item->data)] = '\n';
+		write_lock(&rwl);
 		list_add_tail(&new_item->links, &ghost_node);
+		write_unlock(&rwl);
 		numElems++;
 	}
 	else if (sscanf(kbuf, "remove %s", elem) == 1){
@@ -134,14 +140,20 @@ static ssize_t myproc_write(struct file *filp, const char __user *buf, size_t le
 
           		elem[strlen(elem)] = '\n';
 			if ((cur = findNode(0, elem, &ghost_node)) == NULL) return -EINVAL;
+			write_lock(&rwl);
 			new_item = list_entry(cur, struct list_item, links);
                		list_del(&new_item->links);
+			write_unlock(&rwl);
 			vfree(new_item->data);
         	        vfree(new_item);
 			numElems--;
 		}
 	}
-	else if (strstr(kbuf, "cleanup") != NULL) removeList();
+	else if (strstr(kbuf, "cleanup") != NULL) {
+		write_lock(&rwl);	
+		removeList();
+		write_unlock(&rwl);
+	}
 	else return -EINVAL;
 
 #else
@@ -149,7 +161,9 @@ static ssize_t myproc_write(struct file *filp, const char __user *buf, size_t le
 
 		new_item = vmalloc(sizeof(int) * 4);
 		new_item->data = n;
+		write_lock(&rwl);
 		list_add_tail(&new_item->links,&ghost_node);
+		write_unlock(&rwl);
 		numElems++;
 	}
 	else if (sscanf(kbuf, "remove %d", &n) == 1){
@@ -157,13 +171,19 @@ static ssize_t myproc_write(struct file *filp, const char __user *buf, size_t le
 		if(numElems > 0){
 
 			if ((cur = findNode(n, NULL, &ghost_node)) == NULL) return -EINVAL;
+			write_lock(&rwl);
 			new_item = list_entry(cur, struct list_item, links);
 			list_del(&new_item->links);
+			write_unlock(&rwl);
 			vfree(new_item);
 			numElems--;
 		}
 	}
-	else if (strstr(kbuf, "cleanup") != NULL) removeList();
+	else if (strstr(kbuf, "cleanup") != NULL) {
+		write_lock(&rwl);
+		removeList();
+		write_unlock(&rwl);
+	}
 	else return -EINVAL;
 #endif
 
@@ -183,8 +203,10 @@ static ssize_t myproc_read(struct file *filp, char __user *buf, size_t len, loff
 
 	if ((*off) > 0) return 0; //Previously invoked!
 
+	read_lock(&rwl);
 	read = print_list(&ghost_node, kbuf);
-
+	read_unlock(&rwl);
+	
 	kbuf[read++] = '\0';
 
 	if (copy_to_user(buf, kbuf, read) > 0) return -EFAULT;
