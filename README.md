@@ -26,3 +26,4 @@ Usage: Compile, load the module, access via cat and echo to /proc/modlist
 [SP]
 Módulo del kernel Linux que permite manejar una lista doblemente enlazada con nodo fantasma -y que usa muy poca memoria dinámica - de enteros o chars.
 Edita el MakeFile si quieres usar los chars. Incluye una implementación alternativa de read() usando seq_files.
+Para usarlo primero hay que compilar y cargar el módulo ,tal y como se especifica arriba.
