@@ -83,7 +83,7 @@ void removeList(void) {
 }
 
 /* Auxiliar function - return number of elements*/
-int print_list(struct list_head* list, char members[], int maxSize){
+int print_list(struct list_head* list, char members[]){
 
 	struct list_item* item = NULL;
 	struct list_head* cur_node = NULL;
@@ -206,7 +206,7 @@ static ssize_t myproc_read(struct file *filp, char __user *buf, size_t len, loff
 	read_lock(&rwl);
 	read = print_list(&ghost_node, kbuf);
 	read_unlock(&rwl);
-	
+
 	kbuf[read++] = '\0';
 
 	if (copy_to_user(buf, kbuf, read) > 0) return -EFAULT;
