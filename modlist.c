@@ -149,7 +149,7 @@ static ssize_t myproc_write(struct file *filp, const char __user *buf, size_t le
 			numElems--;
 		}
 	}
-	else if (strstr(kbuf, "cleanup") != NULL) {
+	else if (strcmp(kbuf, "cleanup\n") == 0) {
 		write_lock(&rwl);	
 		removeList();
 		write_unlock(&rwl);
@@ -179,7 +179,7 @@ static ssize_t myproc_write(struct file *filp, const char __user *buf, size_t le
 			numElems--;
 		}
 	}
-	else if (strstr(kbuf, "cleanup") != NULL) {
+	else if (strcmp(kbuf, "cleanup\n") == 0) {
 		write_lock(&rwl);
 		removeList();
 		write_unlock(&rwl);
