@@ -1,6 +1,6 @@
 # Linux Linked Lists
 [EN] 
-Linux kernel module for managing a doubly-linked lists with ghost node -which uses few dynamic memory resources- of integers or chars. It includes an alternative implementation of read() using seq_files.
+SMP-Safe Linux kernel module for managing a doubly-linked lists with ghost node -which uses few dynamic memory resources- of integers or chars. It includes an alternative implementation of read() using seq_files.
 Edit the Makefile for using chars.
 
 Usage: Compile, load the module, access via cat and echo to /proc/modlist
