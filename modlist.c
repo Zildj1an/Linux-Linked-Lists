@@ -125,7 +125,7 @@ static ssize_t myproc_write(struct file *filp, const char __user *buf, size_t le
 
 	if(sscanf(kbuf, "add %s", elem) == 1) {
 
-	        new_item = vmalloc(sizeof(int) * 4 + strlen(elem) + 1);
+	        new_item = vmalloc(sizeof(struct list_item));
 		new_item->data = vmalloc(strlen(elem) + 1);
 		strcpy(new_item->data, elem);
 		new_item->data[strlen(new_item->data)] = '\n';
