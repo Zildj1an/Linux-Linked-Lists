@@ -58,7 +58,7 @@ struct list_head* findNode(int n, char *c, struct list_head* head){
 		aux = pos;
 	}
 
-	if(find == 1) return aux;
+	if(find) return aux;
 
 	return NULL;
 }
@@ -254,7 +254,7 @@ static int l_seq_show(struct seq_file *s, void *v){
 
 #ifdef CHARS
 
-	if(elems == 1){
+	if(elems){
 		seq_printf(s, "%s\n", "ERROR -> Check dmesg (Can not use seq_files for chars)");
 		printk(KERN_INFO "The seq_files implementation is only available for integers \n");
 		printk(KERN_INFO "Please, comment the optional flag if you want to use it \n");
