@@ -5,7 +5,7 @@ Edit the Makefile for using chars.
 
 Usage: Compile, load the module, access via cat and echo to /proc/modlist
 
-
+```bash
     $ make
 
     $ sudo insmod modlist.ko
